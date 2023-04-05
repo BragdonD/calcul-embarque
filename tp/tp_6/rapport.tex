@@ -1,0 +1,249 @@
+\documentclass[a4paper, 12pt, openany]{book}
+
+\usepackage[a4paper, margin=2.5cm]{geometry}
+
+% packages for customization
+% packages for customization
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{hyperref}
+\usepackage[french]{babel}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+
+\addto\captionsfrench{\renewcommand{\chaptername}{Exercice}}
+\renewcommand{\thechapter}{\arabic{chapter}}
+
+\input{code.tex}
+
+\titlespacing*{\chapter}{0pt}{-50pt}{40pt}
+
+\renewcommand{\lstlistingname}{Code} % Change the caption label to "Code"
+
+\definecolor{titlecolor}{HTML}{007A7B} % Define title color
+
+% set up hyperlinks
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+
+% format table of contents
+
+\begin{document}
+
+% custom front page
+\begin{titlepage}
+    \centering
+    \textcolor{titlecolor}{\noindent\rule{\textwidth}{2pt}}% top line
+    \vspace{1cm}
+    \textcolor{titlecolor}{\textbf{\Large RAPPORT DE TP}}\\[1cm]
+    \textcolor{titlecolor}{TP 6: Apprentissage Profond}\\[1cm]
+    \textcolor{titlecolor}{\noindent\rule{\textwidth}{2pt}}% bottom line
+    \vspace{1cm}
+    \begin{tabular}{lll}
+        \textbf{\underline{Auteurs}:} & & \textbf{\underline{Enseignant}:}\\
+        & & \\
+        Thomas & DUCLOS \hspace{2cm} & M. DERRAZ \\
+        Hugo & VIDAL & \\
+        Sarah & ABERGEL & \\ 
+    \end{tabular}\\[2cm]
+    \vfill
+    \begin{figure}[h]
+      \centering
+      \includegraphics[width=0.5\textwidth]{ece.png}
+    \end{figure}
+    \vfill
+    \begin{minipage}{\textwidth}
+    Nous attestons que ce travail est original, qu'il est le fruit d'un travail commun au trinôme et qu'il a été rédigé de manière autonome.
+    \begin{flushright}
+      \textbf{Paris, le 05/04/2023}
+    \end{flushright}
+    \end{minipage}
+\end{titlepage}
+
+\titleformat{\chapter}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{}}{0.5em}{\textcolor{titlecolor}}
+\titleformat{\section}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{}}{0.5em}{\textcolor{titlecolor}}
+
+\tableofcontents 
+
+\clearpage 
+
+\chapter{Introduction}
+
+Le but de ce TP est de mettre en place un réseau de neurones reccurent (RNN) et convolutionnel (CNN) simple afin de se familiariser avec ces modèles d'apprentissage profond
+et la façon de les entrainer: la backpropagation du gradient.
+
+\section{Liste des abréviations}
+\begin{itemize}
+  \item \textbf{RNN}: Réseau de Neurones Récurrents (Recurrent Neural Network en anglais)
+  \item \textbf{CNN}: Réseau de Neurones Convolutifs (Convolutional Neura Network en anglais)
+  \item \textbf{NN}: Réseau de Neurones (Neural Network en anglais)
+\end{itemize}
+
+% format section and subsection headings
+\titleformat{\chapter}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{Exercice \Roman{chapter} -}}{0.5em}{\textcolor{titlecolor}}
+\titleformat{\section}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{\Alph{section} -}}{0.5em}{\textcolor{titlecolor}}
+
+\chapter{RNN simple pour Arduino}
+
+\section{But de l'exercice}
+Le but de l'exercice est de simuler un réseau de neurones récurrents (\textbf{RNN}) pour \textbf{prédire} une séquence de sortie en fonction d'une séquence d'entrée. 
+Le \textbf{RNN} est composé de trois couches de neurones: une couche d'entrée, une couche cachée et une
+couche de sortie. Les poids et les biais de chaque couche sont initialisés aléatoirement à l'aide
+de la fonction d'initialisation des poids. Les sorties sont calculés par l'algorithme de
+\textbf{``propagation avant''} de l'entrée à travers le réseau pour calculer la sortie en utilisant la fonction
+d'activation \textbf{sigmoid}. Le seuil de prédiction de sortie est donné par la valeur lu du d'une
+fonction \textbf{valpot} et ajuste le seuil de prédiction en conséquence. La prédiction est initialisé par
+la séquence d'entrée avec des valeurs aléatoires et démarre la séquence de prédiction. Dans
+la boucle \textbf{loop()}, la séquence d'entrée est avancée à chaque itération et la séquence de sortie
+est prédite. La valeur prédite est affichée sur la \textbf{LED interne} de l'arduino Due en fonction du
+seuil de prédiction. \\
+
+Le code de cet exercice est fourni en annexe.
+\section{Réponse à l'exercice}
+\begin{enumerate}
+  \item {
+    \textbf{Quel est le rôle de la fonction initializeWeights?} \vspace{0.2cm}\\
+    Le rôle de la fonction initializeWeights est d'intialiser les valeurs des poids et des biais contenues 
+    dans les différentes matrices \textbf{weightsIH}, \textbf{weightsHH}, \textbf{weightsHO}, \textbf{biasH} et \textbf{biasO}. 
+    Les valeurs utilisées pour initialiser les différentes valeurs sont des valeurs aléatoires comprises entre 0 et 1.
+  } \\
+  \item {
+    \textbf{Comment est calculé l'état caché (hidden state) dans la fonction forwardPass?} \vspace{0.2cm}\\
+    La fonction \textbf{forwardPass} calcule l'état caché en effectuant une série d'opérations de calculs sur les entrées fournies
+    dans le tableau d'entrées ainsi que sur les différents biais et poids du réseaux stockés globalement. \\
+    Plus précisément, la fonction calcule l'état caché en effectuant les opérations suivantes:
+    \begin{enumerate}
+      \item Initialiser les valeurs de l'état caché à 0.
+      \item Pour chaque neurone d'entrée, multiplier la valeur de l'entrée correspondante par le poids correspondant entre l'entrée et le neurone caché.
+      \item Pour chaque neurone caché, multiplier la valeur de son état actuel par le poids correspondant entre ce neurone et le neurone caché considéré.
+      \item Ajouter la somme de ces produits pondérés à la valeur du biais du neurone caché considéré.
+      \item Appliquer une fonction d'activation à la somme pondérée obtenue pour obtenir la valeur finale de l'état caché pour le neurone considéré.
+    \end{enumerate}
+    Ces étapes sont effectuées pour chaque neurone caché dans le réseau, ce qui permet de calculer l'état caché complet du réseau de neurones.
+  } \\
+  \item {
+    \textbf{Quel est l'avantage de l'utilisation de la fonction d'activation sigmoid pour calculer les sorties du réseau de neurones?}\vspace{0.2cm}\\
+    Les avantages de l'utilisation de la fonction \textbf{sigmoïd} en tant que fonction d'activation est qu'elle possède une plage de sortie entre 0 et 1, ce 
+    qui est particulièrement adapté pour des problèmes de classification binaire, notre cas d'étude nécéssite une sortie binaire 0 ou 1 pour l'état de la LED.\@
+  } \\
+  \item {
+    \textbf{A quoi sert la fonction readPoten et comment est-elle utilisée pour ajuster le seuil de prédiction?} \vspace{0.2cm}\\
+    La fonction \textbf{readPoten} permet de lire la valeur du potentiomètre. Par la suite elle map cette valeur entre 0 et 1 et set le treshold à cette valeur.\\
+    Le treshold permet de considérer si un output est une valeur positive ou négative. Dans notre cas positive représente allumer la LED et négative représente éteindre la LED.\@
+  } \\\newpage
+  \item {
+    \textbf{A quoi sert la fonction startPrediction et comment est-elle utilisée pour calculer la prédiction?} \vspace{0.2cm}\\
+    La fonction startPrediction initialise les valeurs du tableau d'entrée entre 0 et 1. Par la suite, elle met la valeur de la variable \textbf{predict} à la valeur \textbf{true}.
+    Cette valeur de la variable \textbf{predict} permet d'indiquer à la boucle \textbf{loop} du programme de commencer la prédiction du réseau sur le tableau d'entrée.\\
+    En résumé cette fonction possède à la fois un rôle d'initialisation mais également d'initiatrice du réseau de neurone.
+  } \\
+  \item {
+    \textbf{Expliquer comment le RNN calcule la sortie avec la fonction forwardPass et comment on peut faire pour étendre le nombre des cellules RNN?} \vspace{0.2cm}\\
+    Le \textbf{RNN} utilise la fonction \textbf{forwardPass} pour calculer la \textbf{sortie} du réseau en focntion de \textbf{l'état caché} et des \textbf{entrées}. Cette fonction 
+    prend en entrée un \textbf{tableau d'entrée}, un \textbf{tableau de sortie} et un \textbf{tableau d'état caché}. La fonction calcule l'\textbf{état caché} en utilisant les \textbf{entrées} et l'état \textbf{caché}
+    de la couche précédente, en utilisant les \textbf{poids} et les \textbf{biais}, puis passe cette somme pondérée à une \textbf{fonction d'activation} pour obtenir l'état caché de la cellule. Ceci est répété pour chaque 
+    cellule de la couche cachée. \\
+    Ensuite la fonction \textbf{forwardPass} calcule la séquence de sortie en bouclant sur les \textbf{cellules de sortie} du \textbf{RNN}. Pour chaque cellule de sortie, la fonction calcule la \textbf{somme pondérée} des états
+    cachés de toutes les cellules RNN en utilisant les \textbf{poids weightsHO} et le biais \textbf{biasO}. Cette somme pondérée est ensuite passée à la fonction d'activation pour \textbf{obtenir la sortie} de la cellule.
+  
+    Pour étendre le nombre de \textbf{cellules RNN} dans le réseau, il faut ajouter des cellules RNN supplémentaires à la couche cachée. Cela implique d'augmenter la taille des tableaux \textbf{hidden}, \textbf{weightsHH}.
+    Il faut également modifier la fonction \textbf{forwardPass} pour prendre en compte ces nouvelles cellules.
+  }
+\end{enumerate}
+
+\chapter{CNN sur Arduino Due}
+
+\begin{enumerate}
+  \item {
+    \textbf{A quoi servent les constantes \lstinline{INPUT_SIZE, KERNEL_SIZE, PADDING_SIZE, STRIDE_SIZE et POOL_SIZE}?} \vspace{0.2cm}\\
+    Les constantes \textbf{\lstinline{INPUT_SIZE, KERNEL_SIZE, PADDING_SIZE, STRIDE_SIZE et POOL_SIZE}} sont utilisées pour définir les paramètres du réseau de neurones \textbf{CNN}. \\
+    Plus particulièrement les constantes représentent:
+    \begin{itemize}
+      \item \textbf{\lstinline{INPUT_SIZE}}: représente la taille de la matrice d'entrée, ici $9 \times 9$ pixels.
+      \item \textbf{\lstinline{KERNEL_SIZE}}: représente la taille du noyeau de convolution utilisé pour filtrer la matrice, ici $3 \times 3$ pixels.
+      \item \textbf{\lstinline{PADDING_SIZE}}: représente la taille de remplissage ajoutée autour de la matrice, ici 1 pixel.
+      \item \textbf{\lstinline{STRIDE_SIZE}}: représente la taille du pas de la fenêtre de convolution lors du glissement de l'image d'entrée, ici 1 pixel.
+      \item \textbf{\lstinline{POOL_SIZE}}: représente la taille la fenêtre utilisée pour effectuer le max-pooling sur la sortie de la convolution, ici $2 \times 2$ pixels.
+    \end{itemize}
+    Ces paramètres sont utilisées dans les différentes fonctions afin de traiter la matrice d'entrée et produire une sortie.
+  } \\
+  \item {
+    \textbf{Que fait la fonction convolution2D et quels sont les arguments qu'elle prend en entrée?} \vspace{0.2cm}\\ 
+    La fonction convolution2D effectue une convolution 2D entre l'image d'entrée (définie par la matrice input), le noyau (défini par la matrice kernel) et un biais (défini par le scalaire bias), et stocke le résultat de la convolution dans la matrice de sortie output.
+    Les arguments d'entrée de cette fonction sont:
+    \begin{itemize}
+      \item \textbf{input}: une matrice carrée de dimensions \textbf{\lstinline{INPUT_SIZE}}$\times$\textbf{\lstinline{INPUT_SIZE}}, représentant l'image d'entrée.
+      \item \textbf{kernel}: une matrice carrée de dimensions \textbf{\lstinline{IKERNEL_SIZE}}$\times$\textbf{\lstinline{KERNEL_SIZE}}, représentant le noyau de convolution.
+      \item \textbf{output}: une matrice carrée de dimensions \textbf{\lstinline{IUTPUT_SIZE}}$\times$\textbf{\lstinline{OUTPUT_SIZE}}, représentant la sortie de la convolution.
+      \item \textbf{bias}: un scalaire représentant le biais de la couche de convolution. \\
+    \end{itemize}
+  }
+  \item {
+    \textbf{Que fait la fonction maxPooling et quels sont les arguments qu'elle prend en entrée? Préciser les dimensions des matrices d'entrée et de sortie.} \vspace{0.2cm}\\
+    La fonction \textbf{maxPooling} est une opération de sous-échantillonage, c'est à dire une opération qui consiste à réduire la taille spatiale de la matrice d'entrée.
+    Cela permet notamment de réduire la complexité du modèle et de diminuer la quantité de donnée traitées tout en conservant les données importantes.
+
+    La fonction prend en entrée deux paramètres qui sont:
+    \begin{itemize}
+      \item \textbf{poolinput}: Une matrice d'entrée de taille $9 \times 9$
+      \item \textbf{pool}: Une matrice de sortie de taille $4 \times 4$ \\
+    \end{itemize}
+  } \newpage
+  \item {
+    \textbf{Que fait la fonction flatten2vector et quels sont les arguments qu'elle prend en entrée? Préciser les dimensions de 
+    la matrice d'entrée et la taille du vecteur de sortie.} \vspace{0.2cm}\\ 
+    La fonction flatten2vector prend en entrée une matrice multidimensionnelle et renvoie un vecteur à une dimension en ``aplatissant'' toutes les dimensions de la matrice d'entrée. \\
+    Plus précisément, la fonction prend en entrée une matrice de dimension $4\times 4$ et renvoie un vecteur de dimension $16\times 1$.
+  } 
+  \item {
+    \textbf{Ajouter une fonction Printflatten2vector en code Arduino pour afficher la taille du vecteur.} \vspace{0.2cm} \\ 
+    On crée la fonction \textbf{Printflatten2vector} suivante, afin d'afficher la taille du vecteur de sortie de la fonction \textbf{flatten2vector}:
+    \begin{lstlisting}[language=C]
+/**
+* @brief Prints the flattened vector
+*/
+void printflatten2vector()
+{
+  Serial.print("Flattened Vector Size: ");
+  Serial.println(NumberOf(eflattened));
+  Serial.println();
+}
+    \end{lstlisting}
+    Après exécution de ce code, on obtient la sortie suivante:
+    \begin{lstlisting}[language=C]
+Flattened Vector Size: 16
+    \end{lstlisting}
+    On obtient donc bien la sortie attendue de 16.
+  } 
+  \item {
+    \textbf{Peut on définir le vecteur expectedOutput. Si oui comment vous pouvez le générer?} \vspace{0.2cm} \\
+  } 
+  \item {
+    \textbf{Est-il toujours possible d'appliquer NN.BackProp?} \vspace{0.2cm} \\
+  } 
+  \item {
+    \textbf{Executer le code arduino ci-dessous pour générer une sortie de CNN.} \vspace{0.2cm} \\ 
+    % Ajouter une reference en annexe
+  } 
+  \item {
+    \textbf{Ajoutez une deuxième couche à votre CNN (Convolution 2D et Max-pooling) et
+    exécutez à nouveau le code Arduino. N'oubliez pas d'ajouter des matrices de taille
+    appropriée pour la deuxième couche et assurez-vous que le nouveau CNN génère un
+    vecteur ``flatten'' de taille plus petit.} \vspace{0.2cm} \\
+  }
+
+\end{enumerate}
+
+\newpage
+
+\appendix
+
+\titleformat{\chapter}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{}}{0.5em}{\textcolor{titlecolor}}
+\chapter{Annexes}\label{annexe}
+\input{RNN.tex}
+
+
+\end{document}
+

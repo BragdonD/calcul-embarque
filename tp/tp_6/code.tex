@@ -1,0 +1,49 @@
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Define GitHub light theme colors
+\definecolor{github-light-gray}{HTML}{F6F8FA}
+\definecolor{github-light-blue}{HTML}{0366D6}
+\definecolor{github-light-orange}{HTML}{E36209}
+\definecolor{github-light-purple}{HTML}{6F42C1}
+
+% Configure listing package
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\color{black},
+  keywordstyle=\color{github-light-purple},
+  stringstyle=\color{github-light-orange},
+  commentstyle=\color{gray}\itshape,
+  numberstyle=\color{gray},
+  showstringspaces=false,
+  breaklines=true,
+  frame=tb,
+  framexleftmargin=1em,
+  backgroundcolor=\color{github-light-gray},
+  captionpos=b,
+  tabsize=4,
+  numbers=left,
+  numbersep=5pt,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=2em,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt,
+  rulecolor=\color{github-light-gray},
+  escapeinside={{*@}{@*}},
+  morekeywords={bool, true, false},
+  literate=%
+    {0}{{\textcolor{github-light-orange}{0}}}1
+    {1}{{\textcolor{github-light-orange}{1}}}1
+    {2}{{\textcolor{github-light-orange}{2}}}1
+    {3}{{\textcolor{github-light-orange}{3}}}1
+    {4}{{\textcolor{github-light-orange}{4}}}1
+    {5}{{\textcolor{github-light-orange}{5}}}1
+    {6}{{\textcolor{github-light-orange}{6}}}1
+    {7}{{\textcolor{github-light-orange}{7}}}1
+    {8}{{\textcolor{github-light-orange}{8}}}1
+    {9}{{\textcolor{github-light-orange}{9}}}1
+}
+
+% Set background color of lstlistings environment
+\lstset{backgroundcolor=\color{github-light-gray}}
