@@ -1,0 +1,209 @@
+\chapter{CNN sur Arduino Due}
+\section{But de l'exercice}
+L'objectif de cette partie est d'entraîner un modèle de réseau de neurones convolutifs (CNN) pour la classification d'une matrice carrée de $9\times9$. Pour ce faire, vous allez suivre les étapes suivantes :
+\begin{enumerate}
+    \item Charger la matrice.
+    \item Prétraiter la matrice en la normalisant et en la redimensionnant si nécessaire.
+    \item Définir l'architecture du modèle CNN en utilisant des couches de convolution, de pooling et des couches entièrement connectées.
+    \item Compiler le modèle sur l'Arduino Due.
+    \item Évaluer la performance du modèle en mesurant le temps d'entraînement.
+    \item Analyser les résultats et ajuster les hyperparamètres du modèle pour améliorer les performances si nécessaire.
+    \item Tester le modèle sur des matrices modifiées.
+\end{enumerate}
+En suivant ces étapes, vous serez en mesure de construire un modèle CNN efficace pour la classification de matrices carrées de $9\times9$, ce qui peut avoir de nombreuses applications dans des domaines tels que la vision par ordinateur et le traitement de données. \\
+
+Le code de cet exercice peut être retrouvé en annexe. \hyperref[sec:CNN-code]{Code de l'exercice}.
+\section{Réponse à l'exercice}
+\begin{enumerate}
+  \item {
+    \textbf{A quoi servent les constantes \lstinline{INPUT_SIZE, KERNEL_SIZE, PADDING_SIZE, STRIDE_SIZE et POOL_SIZE}?} \vspace{0.2cm}\\
+    Les constantes \textbf{\lstinline{INPUT_SIZE, KERNEL_SIZE, PADDING_SIZE, STRIDE_SIZE et POOL_SIZE}} sont utilisées pour définir les paramètres du réseau de neurones \textbf{CNN}. \\
+    Plus particulièrement les constantes représentent:
+    \begin{itemize}
+      \item \textbf{\lstinline{INPUT_SIZE}}: représente la taille de la matrice d'entrée, ici $9 \times 9$ pixels.
+      \item \textbf{\lstinline{KERNEL_SIZE}}: représente la taille du noyeau de convolution utilisé pour filtrer la matrice, ici $3 \times 3$ pixels.
+      \item \textbf{\lstinline{PADDING_SIZE}}: représente la taille de remplissage ajoutée autour de la matrice, ici 1 pixel.
+      \item \textbf{\lstinline{STRIDE_SIZE}}: représente la taille du pas de la fenêtre de convolution lors du glissement de l'image d'entrée, ici 1 pixel.
+      \item \textbf{\lstinline{POOL_SIZE}}: représente la taille la fenêtre utilisée pour effectuer le max-pooling sur la sortie de la convolution, ici $2 \times 2$ pixels.
+    \end{itemize}
+    Ces paramètres sont utilisées dans les différentes fonctions afin de traiter la matrice d'entrée et produire une sortie.
+  } \\\newpage
+  \item {
+    \textbf{Que fait la fonction convolution2D et quels sont les arguments qu'elle prend en entrée?} \vspace{0.2cm}\\ 
+    La fonction convolution2D effectue une convolution 2D entre l'image d'entrée (définie par la matrice input), le noyau (défini par la matrice kernel) et un biais (défini par le scalaire bias), et stocke le résultat de la convolution dans la matrice de sortie output.
+    Les arguments d'entrée de cette fonction sont:
+    \begin{itemize}
+      \item \textbf{input}: une matrice carrée de dimensions \textbf{\lstinline{INPUT_SIZE}}$\times$\textbf{\lstinline{INPUT_SIZE}}, représentant l'image d'entrée.
+      \item \textbf{kernel}: une matrice carrée de dimensions \textbf{\lstinline{IKERNEL_SIZE}}$\times$\textbf{\lstinline{KERNEL_SIZE}}, représentant le noyau de convolution.
+      \item \textbf{output}: une matrice carrée de dimensions \textbf{\lstinline{IUTPUT_SIZE}}$\times$\textbf{\lstinline{OUTPUT_SIZE}}, représentant la sortie de la convolution.
+      \item \textbf{bias}: un scalaire représentant le biais de la couche de convolution. \\
+    \end{itemize}
+  }
+  \item {
+    \textbf{Que fait la fonction maxPooling et quels sont les arguments qu'elle prend en entrée? Préciser les dimensions des matrices d'entrée et de sortie.} \vspace{0.2cm}\\
+    La fonction \textbf{maxPooling} est une opération de sous-échantillonage, c'est à dire une opération qui consiste à réduire la taille spatiale de la matrice d'entrée.
+    Cela permet notamment de réduire la complexité du modèle et de diminuer la quantité de donnée traitées tout en conservant les données importantes.
+
+    La fonction prend en entrée deux paramètres qui sont:
+    \begin{itemize}
+      \item \textbf{poolinput}: Une matrice d'entrée de taille $9 \times 9$
+      \item \textbf{pool}: Une matrice de sortie de taille $4 \times 4$ \\
+    \end{itemize}
+  }
+  \item {
+    \textbf{Que fait la fonction flatten2vector et quels sont les arguments qu'elle prend en entrée? Préciser les dimensions de 
+    la matrice d'entrée et la taille du vecteur de sortie.} \vspace{0.2cm}\\ 
+    La fonction flatten2vector prend en entrée une matrice multidimensionnelle et renvoie un vecteur à une dimension en ``aplatissant'' toutes les dimensions de la matrice d'entrée. \\
+    Plus précisément, la fonction prend en entrée une matrice de dimension $4\times 4$ et renvoie un vecteur de dimension $16\times 1$.
+  } \\
+  \item {
+    \textbf{Ajouter une fonction Printflatten2vector en code Arduino pour afficher la taille du vecteur.} \vspace{0.2cm} \\ 
+    On crée la fonction \textbf{Printflatten2vector} suivante, afin d'afficher la taille du vecteur de sortie de la fonction \textbf{flatten2vector}:
+    \begin{lstlisting}[language=C]
+/**
+* @brief Prints the flattened vector
+*/
+void printflatten2vector()
+{
+  Serial.print("Flattened Vector Size: ");
+  Serial.println(NumberOf(eflattened));
+  Serial.println();
+}
+    \end{lstlisting}
+    Après exécution de ce code, on obtient la sortie suivante:
+    \begin{lstlisting}[language=C]
+Flattened Vector Size: 16
+    \end{lstlisting}
+    On obtient donc bien la sortie attendue de 16.
+  } \\
+  \item {
+    \textbf{Peut on définir le vecteur expectedOutput. Si oui comment vous pouvez le générer?} \vspace{0.2cm} \\
+    On utilise une fonction \textbf{sïgmoid} pour la fonction d'activation de la couche de sortie. 
+    Cela implique donc que les résultats attendus doivent être compris entre 0 et 1. \\
+    Pour générer un vecteyur de sortie attendue on peut observer le contenu de notre vecteur \textbf{eflattened}. 
+    En effet, il est important que chaque entrée indentique possède la même sortie pour notre vecteur de sortie. \\
+    On procède aux modifications suivantes:
+    \begin{lstlisting}[language=C]
+/**
+* @brief Prints the flattened vector
+*/
+void printflatten2vector()
+{
+  Serial.print("Flattened Vector Size: ");
+  Serial.println(NumberOf(eflattened));
+  for (unsigned int i = 0; i < NumberOf(eflattened); i++)
+  {
+    Serial.print(eflattened[i][0]);
+    Serial.print(" ");
+  }
+  Serial.println();
+}    
+    \end{lstlisting}
+    On obtient la sortie suivante:
+    \begin{lstlisting}[language=C]
+Flattened Vector Size: 16
+2.00 2.00 1.00 2.00 2.00 2.00 3.00 2.00 1.00 3.00 3.00 2.00 2.00 2.00 2.00 2.00
+    \end{lstlisting}
+    On remarque qu'on possède trois valeurs différentes dans notre vecteur \textbf{eflattened}.
+    Il faut donc créer un vecteur de sortie contenant 3 valeurs différentes. On attribura la valeur 0 à 1.0, la valeur 0.5 à 2.0 et la valeur 1.0 à 3.0.
+    On crée donc le vecteur \textbf{expectedOutput} suivant:
+    \begin{lstlisting}[language=C]
+float expectedOutput[NumberOf(eflattened)][1] = {
+  {0.5},
+  {0.5},
+  {0.0},
+  {0.5},
+  {0.5},
+  {0.5},
+  {1.0},
+  {0.5},
+  {0.0},
+  {1.0},
+  {1.0},
+  {0.5},
+  {0.5},
+  {0.5},
+  {0.5},
+  {0.5}};
+    \end{lstlisting}
+  } 
+  \item {
+    \textbf{Est-il toujours possible d'appliquer NN.BackProp?} \vspace{0.2cm} \\
+    Il est toujours possible d'appliquer la fonction \textbf{NN.BackProp} car on a bien créer un vecteur de sortie attendue.
+  } \\
+  \item {
+    \textbf{Executer le code arduino ci-dessous pour générer une sortie de CNN.} \vspace{0.2cm} \\ 
+    En éxécutant le code Arduino fournit en Annexe, on obtient la sortie suivante de CNN:
+    \begin{lstlisting}[language=C]
+==OUTPUT==
+0.5040258
+0.5065975
+0.0434024
+0.4976205
+0.4892119
+0.4907302
+0.9078354
+0.4965506
+0.1244029
+0.9028047
+0.8934928
+0.4953395
+0.4956358
+0.4928572
+0.5052462
+0.4997209
+    \end{lstlisting}
+    On remarque imédiatement que l'on obtient des valeurs très proches de notre vecteur de sortie attendue. 
+    On peut donc conclure que notre CNN fonctionne correctement.
+  } \\
+  \item {
+    \textbf{Ajoutez une deuxième couche à votre CNN (Convolution 2D et Max-pooling) et
+    exécutez à nouveau le code Arduino. N'oubliez pas d'ajouter des matrices de taille
+    appropriée pour la deuxième couche et assurez-vous que le nouveau CNN génère un
+    vecteur ``flatten'' de taille plus petit.} \vspace{0.2cm} \\
+    On ajoute une deuxième couche à notre CNN en ajoutant une convolution 2D et un max-pooling. Pour cela,
+    on modifie la fonction \textbf{setup} du code Arduino afin d'ajouter cette deuxieme couche de \textbf{CNN}.
+    \begin{lstlisting}[language=C]
+void setup()
+{
+  Serial.begin(115200);
+  /// First Convolutional Layer
+  convolution2D<INPUT_SIZE, INPUT_SIZE, KERNEL_SIZE, KERNEL_SIZE, OUTPUT_SIZE, OUTPUT_SIZE>(einput, ekernel, eoutput, ebias);
+  maxPooling<OUTPUT_SIZE, OUTPUT_SIZE>(eoutput, epool);
+  flatten2vector<(OUTPUT_SIZE/POOL_SIZE)*(OUTPUT_SIZE/POOL_SIZE), OUTPUT_SIZE/POOL_SIZE, OUTPUT_SIZE/POOL_SIZE>(eflattened, epool);
+  printflatten2vector<(OUTPUT_SIZE/POOL_SIZE)*(OUTPUT_SIZE/POOL_SIZE)>(eflattened);
+  
+  /// Second Convolutional Layer
+  convolution2D(eoutput, ekernel2, eoutput2, ebias2);
+  maxPooling(eoutput2, epool2);
+  flatten2vector(eflattened2, epool2);
+  printflatten2vector<(OUTPUT_SIZE/POOL_SIZE)*(OUTPUT_SIZE/POOL_SIZE)>(eflattened2);
+
+  /// Training of the NN
+}
+    \end{lstlisting}
+    On obtient la sortie suivante:
+    \begin{lstlisting}[language=C]
+==OUTPUT==
+0.5158193
+0.4966319
+0.0200490
+0.5263751
+0.4992304
+0.5321954
+0.9571766
+0.4746489
+0.1688640
+0.9574783
+0.9575736
+0.4916144
+0.4915983
+0.4887536
+0.4916826
+0.4915988
+    \end{lstlisting}
+    On peut remarquer que nos résultat sont encore plus proches de notre vecteur de sortie attendue que lors de la première couche. 
+    On peut donc conclure que notre CNN fonctionne correctement.
+  }
+
+\end{enumerate}
