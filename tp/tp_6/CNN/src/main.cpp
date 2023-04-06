@@ -22,6 +22,7 @@ float *outputs;
 //
 void convolution2D(float input[INPUT_SIZE][INPUT_SIZE], float kernel[KERNEL_SIZE][KERNEL_SIZE], float output[OUTPUT_SIZE][OUTPUT_SIZE], float bias)
 {
+  Serial.println("Convolution2D");
   for (int i = 0; i < OUTPUT_SIZE; i++)
   {
     for (int j = 0; j < OUTPUT_SIZE; j++)
@@ -31,16 +32,33 @@ void convolution2D(float input[INPUT_SIZE][INPUT_SIZE], float kernel[KERNEL_SIZE
       {
         for (int l = 0; l < KERNEL_SIZE; l++)
         {
-          output[i][j] += input[i * STRIDE_SIZE + k - PADDING_SIZE][j * STRIDE_SIZE + l - PADDING_SIZE] * kernel[k][l];
+          int input_row = i * STRIDE_SIZE + k - PADDING_SIZE;
+          int input_col = j * STRIDE_SIZE + l - PADDING_SIZE;
+          if (input_row >= 0 && input_row < INPUT_SIZE && input_col >= 0 && input_col < INPUT_SIZE)
+          {
+            Serial.print("input - ");
+            Serial.print(input_row);
+            Serial.print(", ");
+            Serial.print(input_col);
+            Serial.print(": ");
+            Serial.println(input[input_row][input_col]);
+            output[i][j] += input[input_row][input_col] * kernel[k][l];
+          }
         }
       }
       output[i][j] += bias;
+      Serial.print(i);
+      Serial.print(", ");
+      Serial.print(j);
+      Serial.print(": ");
+      Serial.println(output[i][j]);
     }
   }
 }
 //
 void maxPooling(float poolinput[OUTPUT_SIZE][OUTPUT_SIZE], float pool[OUTPUT_SIZE / POOL_SIZE][OUTPUT_SIZE / POOL_SIZE])
 {
+  Serial.println("MaxPooling");
   for (int i = 0; i < OUTPUT_SIZE / POOL_SIZE; i++)
   {
     for (int j = 0; j < OUTPUT_SIZE / POOL_SIZE; j++)
@@ -54,6 +72,11 @@ void maxPooling(float poolinput[OUTPUT_SIZE][OUTPUT_SIZE], float pool[OUTPUT_SIZ
         }
       }
       pool[i][j] = maxVal;
+      Serial.print(i);
+      Serial.print(", ");
+      Serial.print(j);
+      Serial.print(": ");
+      Serial.println(maxVal);
     }
   }
 }
@@ -65,10 +88,15 @@ void flatten2vector(float flattened[(OUTPUT_SIZE / POOL_SIZE) * (OUTPUT_SIZE / P
   {
     for (int j = 0; j < OUTPUT_SIZE / POOL_SIZE; j++)
     {
-      flattened[idx++][1] = pool[i][j];
+      flattened[idx++][0] = pool[i][j];
     }
   }
 }
+
+float eoutput[OUTPUT_SIZE][OUTPUT_SIZE];
+float epool[OUTPUT_SIZE / POOL_SIZE][OUTPUT_SIZE / POOL_SIZE];
+float eflattened[(OUTPUT_SIZE / POOL_SIZE) * (OUTPUT_SIZE / POOL_SIZE)][1];
+float ebias(0.);
 
 // initialize input, kernel, and bias
 float einput[INPUT_SIZE][INPUT_SIZE] = {
@@ -87,15 +115,30 @@ float ekernel[KERNEL_SIZE][KERNEL_SIZE] =
      {1, 1, 1},
      {0, 1, 1}};
 
-float eoutput[OUTPUT_SIZE][OUTPUT_SIZE];
-float epool[OUTPUT_SIZE / POOL_SIZE][OUTPUT_SIZE / POOL_SIZE];
-float eflattened[(OUTPUT_SIZE / POOL_SIZE) * (OUTPUT_SIZE / POOL_SIZE)][1];
-float ebias(0.);
+float expectedOutput[NumberOf(eflattened)][1] = {
+      {0},
+      {0},
+      {1},
+      {0},
+      {0},
+      {0},
+      {1},
+      {0},
+      {0},
+      {1},
+      {1},
+      {0},
+      {0},
+      {0},
+      {0},
+      {0}};
+
 unsigned int layers[] = {NumberOf(eflattened), 6, 3, 1};
 byte Actv_Functions[] = {TANH, TANH, SIGMOID};
-float expectedOutput[NumberOf(eflattened)][1];
 
 NeuralNetwork NN(layers, NumberOf(layers), Actv_Functions);
+
+float *output;
 
 void printflatten2vector();
 
@@ -107,25 +150,43 @@ void setup()
   maxPooling(eoutput, epool);
   flatten2vector(eflattened, epool);
   printflatten2vector();
+
   do
   {
     for (unsigned int j = 0; j < NumberOf(eflattened); j++)
     {
       NN.FeedForward(eflattened[j]);
-      // NN.BackProp(expectedOutput[j]);
+      NN.BackProp(expectedOutput[j]);
     }
     Serial.print("J cretirion Error: "); // Prints the Error.
     Serial.println(NN.MeanSqrdError, 4);
   } while (NN.getMeanSqrdError(NumberOf(eflattened)) > 0.003);
+  Serial.print("==OUTPUT==");
+  for(unsigned int i = 0; i < NumberOf(eflattened); i++)
+  {
+    output = NN.FeedForward(eflattened[i]);
+    Serial.print(round(output[0]));
+    Serial.print("≅");
+    Serial.println(output[0], 7);
+  }
+  NN.print();
 }
 
 void loop()
 {
 }
 
+/**
+ * @brief Prints the flattened vector
+ */
 void printflatten2vector()
 {
   Serial.print("Flattened Vector Size: ");
   Serial.println(NumberOf(eflattened));
+  for (unsigned int i = 0; i < NumberOf(eflattened); i++)
+  {
+    Serial.print(eflattened[i][0]);
+    Serial.print(" ");
+  }
   Serial.println();
 }

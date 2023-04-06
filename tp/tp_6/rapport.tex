@@ -1,9 +1,6 @@
 \documentclass[a4paper, 12pt, openany]{book}
+\usepackage[a4paper, margin=2.5cm]{geometry} % Needed to have even margins
 
-\usepackage[a4paper, margin=2.5cm]{geometry}
-
-% packages for customization
-% packages for customization
 \usepackage{titlesec}
 \usepackage{titletoc}
 \usepackage{hyperref}
@@ -14,34 +11,40 @@
 \usepackage{graphicx}
 \usepackage{fancyhdr}
 
+\input{code.tex} % Code formatting package, handle C language
+
+\titlespacing*{\chapter}{0pt}{-50pt}{40pt} % Remove chapter padding
+
+% Format 
 \addto\captionsfrench{\renewcommand{\chaptername}{Exercice}}
 \renewcommand{\thechapter}{\arabic{chapter}}
-
-\input{code.tex}
-
-\titlespacing*{\chapter}{0pt}{-50pt}{40pt}
-
 \renewcommand{\lstlistingname}{Code} % Change the caption label to "Code"
 
+% Colors definition
 \definecolor{titlecolor}{HTML}{007A7B} % Define title color
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue} % Setup hyperlinks color
 
-% set up hyperlinks
-\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+% Command to remove the page indent between the front matter 
+% and the main matter.
+\makeatletter
+\renewcommand\mainmatter{%
+  \setlength{\parskip}{0pt}
+  \pagenumbering{arabic}
+  \pagestyle{empty}
+  \@mainmattertrue}
+\makeatother
 
-% format table of contents
-
-\begin{document}
-
-% custom front page
+\begin{document} 
+% Front Bage
 \begin{titlepage}
-    \centering
+    \centering 
     \textcolor{titlecolor}{\noindent\rule{\textwidth}{2pt}}% top line
     \vspace{1cm}
-    \textcolor{titlecolor}{\textbf{\Large RAPPORT DE TP}}\\[1cm]
+    \textcolor{titlecolor}{\textbf{\Large RAPPORT DE TP}}\\[1cm] % Title of the page
     \textcolor{titlecolor}{TP 6: Apprentissage Profond}\\[1cm]
     \textcolor{titlecolor}{\noindent\rule{\textwidth}{2pt}}% bottom line
     \vspace{1cm}
-    \begin{tabular}{lll}
+    \begin{tabular}{lll} % Members of the group
         \textbf{\underline{Auteurs}:} & & \textbf{\underline{Enseignant}:}\\
         & & \\
         Thomas & DUCLOS \hspace{2cm} & M. DERRAZ \\
@@ -49,12 +52,12 @@
         Sarah & ABERGEL & \\ 
     \end{tabular}\\[2cm]
     \vfill
-    \begin{figure}[h]
+    \begin{figure}[h] % Logo of the school
       \centering
       \includegraphics[width=0.5\textwidth]{ece.png}
     \end{figure}
     \vfill
-    \begin{minipage}{\textwidth}
+    \begin{minipage}{\textwidth} % Signature
     Nous attestons que ce travail est original, qu'il est le fruit d'un travail commun au trinôme et qu'il a été rédigé de manière autonome.
     \begin{flushright}
       \textbf{Paris, le 05/04/2023}
@@ -62,29 +65,33 @@
     \end{minipage}
 \end{titlepage}
 
+% Define the format of each chapter and section
 \titleformat{\chapter}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{}}{0.5em}{\textcolor{titlecolor}}
 \titleformat{\section}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{}}{0.5em}{\textcolor{titlecolor}}
 
 \tableofcontents 
 
-\clearpage 
+\clearpage % We want the table of contents to be on a separate page
+
+\frontmatter
 
 \chapter{Introduction}
-
 Le but de ce TP est de mettre en place un réseau de neurones reccurent (RNN) et convolutionnel (CNN) simple afin de se familiariser avec ces modèles d'apprentissage profond
 et la façon de les entrainer: la backpropagation du gradient.
 
-\section{Liste des abréviations}
+\section{Liste des abréviations} % Use section to avoid having a new page
 \begin{itemize}
   \item \textbf{RNN}: Réseau de Neurones Récurrents (Recurrent Neural Network en anglais)
   \item \textbf{CNN}: Réseau de Neurones Convolutifs (Convolutional Neura Network en anglais)
   \item \textbf{NN}: Réseau de Neurones (Neural Network en anglais)
 \end{itemize}
 
-% format section and subsection headings
+
+% Redefine the format of each chapter and section
 \titleformat{\chapter}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{Exercice \Roman{chapter} -}}{0.5em}{\textcolor{titlecolor}}
 \titleformat{\section}[hang]{\LARGE\bfseries}{\textcolor{titlecolor}{\Alph{section} -}}{0.5em}{\textcolor{titlecolor}}
 
+\mainmatter
 \chapter{RNN simple pour Arduino}
 
 \section{But de l'exercice}
@@ -132,7 +139,7 @@ Le code de cet exercice est fourni en annexe.
     \textbf{A quoi sert la fonction readPoten et comment est-elle utilisée pour ajuster le seuil de prédiction?} \vspace{0.2cm}\\
     La fonction \textbf{readPoten} permet de lire la valeur du potentiomètre. Par la suite elle map cette valeur entre 0 et 1 et set le treshold à cette valeur.\\
     Le treshold permet de considérer si un output est une valeur positive ou négative. Dans notre cas positive représente allumer la LED et négative représente éteindre la LED.\@
-  } \\\newpage
+  } \\
   \item {
     \textbf{A quoi sert la fonction startPrediction et comment est-elle utilisée pour calculer la prédiction?} \vspace{0.2cm}\\
     La fonction startPrediction initialise les valeurs du tableau d'entrée entre 0 et 1. Par la suite, elle met la valeur de la variable \textbf{predict} à la valeur \textbf{true}.
@@ -154,7 +161,6 @@ Le code de cet exercice est fourni en annexe.
 \end{enumerate}
 
 \chapter{CNN sur Arduino Due}
-
 \begin{enumerate}
   \item {
     \textbf{A quoi servent les constantes \lstinline{INPUT_SIZE, KERNEL_SIZE, PADDING_SIZE, STRIDE_SIZE et POOL_SIZE}?} \vspace{0.2cm}\\
@@ -219,6 +225,8 @@ Flattened Vector Size: 16
   } 
   \item {
     \textbf{Peut on définir le vecteur expectedOutput. Si oui comment vous pouvez le générer?} \vspace{0.2cm} \\
+    On utilise une fonction \textbf{sïgmoid} pour la fonction d'activation de la couche de sortie. 
+    Cela implique donc que les résultats attendus doivent être compris entre 0 et 1. \\
   } 
   \item {
     \textbf{Est-il toujours possible d'appliquer NN.BackProp?} \vspace{0.2cm} \\
